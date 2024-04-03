@@ -1,24 +1,28 @@
+import 'dart:convert';
+
 import 'package:attend2/bloc/model/checkattendance.dart';
 import 'package:attend2/bloc/services/api.dart';
 import 'package:flutter/material.dart';
 
-// void main() {
-//   runApp(MyApp());
-// }
+void main() {
+  runApp(MyApp());
+}
 
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Home Student',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//         visualDensity: VisualDensity.adaptivePlatformDensity,
-//       ),
-//       home: HomeStudentPage(),
-//     );
-//   }
-// }
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Home Student',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: HomeStudentPage(
+        ids: '',
+      ),
+    );
+  }
+}
 
 class HomeStudentPage extends StatefulWidget {
   final String
@@ -153,6 +157,110 @@ class _HomeStudentPageState extends State<HomeStudentPage> {
     }
   }
 
+  void viewAttendance(BuildContext context, String ids) async {
+  var date = _selectedDate;
+  var studentID = _courseCode;
+
+  var pdata = {"id": studentID, "date": date}; // Pass ids here
+  print(pdata);
+  try {
+    var response = await Api.viewATT(pdata);
+
+    // This function returns a List<String> of courses attended or an empty list
+    List<String> coursesAttended = await Api.viewATT(pdata);
+
+    if (coursesAttended.isNotEmpty) {
+      var coursesString = coursesAttended.join(', ');
+      var msg = "Student attended classes for: $coursesString";
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Success'),
+            content: Text(msg),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomeStudentPage(
+                        ids: ids, // Pass ids to HomeStudentPage
+                      ),
+                    ),
+                  );
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      // Display a popup message indicating no classes attended
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('No Classes Attended'),
+            content: Text('Student attended no classes.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  } on FormatException catch (e) {
+    print('Error while trying to view attendance: $e');
+    // Display a generic error message for format exception
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text('An error occurred while trying to view attendance.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  } catch (e) {
+    print('Error while trying to view attendance: $e');
+    // Display a generic error message
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text('An error occurred while trying to view attendance.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -201,7 +309,7 @@ class _HomeStudentPageState extends State<HomeStudentPage> {
             SizedBox(height: 16.0),
             TextField(
               decoration: InputDecoration(
-                labelText: 'Course Code',
+                labelText: 'Enter Student Id',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.book),
               ),
@@ -215,10 +323,10 @@ class _HomeStudentPageState extends State<HomeStudentPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  print('cource code: $_courseCode');
+                  print('student id: $_courseCode');
                   print('Password: $_selectedDate');
 
-                  checkattendace(context, widget.ids); // Pass widget.ids
+                  viewAttendance(context, widget.ids); // Pass widget.ids
                   // Navigator.of(context).push(
                   //   MaterialPageRoute(builder: (context) => HomeStudentPage()),
                   // );

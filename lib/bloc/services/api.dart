@@ -180,4 +180,39 @@ class Api {
       return ApiResponse(500, "Something went wrong");
     }
   }
+
+
+
+static Future<List<String>> viewATT(Map<String, dynamic> pdata) async {
+  var url = Uri.parse("${baseUrl}client/viewattendance");
+
+  try {
+    final res = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(pdata), // Encode pdata to JSON string
+    );
+
+    var data = jsonDecode(res.body);
+    print(data);
+    print(res.statusCode);
+
+    // Check if the 'courses' key exists in the response
+    if (data['courses'] != null && data['courses'] is List) {
+      // If 'courses' key exists and is a List, return it
+      List<String> courses = List<String>.from(data['courses']);
+      return courses;
+    } else {
+      // If 'courses' key does not exist or is not a List, return an empty list
+      return [];
+    }
+  } catch (e) {
+    // If an exception occurs, print the error and return an empty list
+    debugPrint('Error in viewATT: $e');
+    return [];
+  }
+}
+
 }

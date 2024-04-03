@@ -1,5 +1,6 @@
 import 'package:attend2/final/homeTeacher.dart';
 import 'package:attend2/final/loginmain.dart';
+import 'package:attend2/nfc.dart';
 
 import 'package:attend2/sharedData.dart';
 import 'package:flutter/material.dart';
